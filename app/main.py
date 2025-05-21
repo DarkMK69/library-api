@@ -1,0 +1,13 @@
+from fastapi import FastAPI
+from app.core.config import settings
+from app.db.session import engine, Base
+from app.api.v1 import books
+
+app = FastAPI(title=settings.PROJECT_NAME)
+
+@app.on_event("startup")
+async def startup():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+app.include_router(books.router, prefix="/api/v1/books", tags=["books"])
